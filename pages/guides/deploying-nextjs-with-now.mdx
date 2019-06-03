@@ -7,193 +7,371 @@ import { GenericLink } from '~/components/text/link'
 import Card from '~/components/card'
 
 export const meta = {
-  title: 'Create a Next.js Application and Deploy with Now',
+  title: 'Getting Started with Next.js and Now',
   description: 'Creating a Next.js project and deploying it with ZEIT Now',
-  published: '2019-02-11T12:00:00.860Z',
-  authors: ['timothy'],
+  published: '2019-06-03T12:00:00.860Z',
+  authors: ['timothy', 'msweeneydev'],
   url: '/guides/deploying-nextjs-with-now',
   image:
     'https://og-image.now.sh/**Deploy%20Serverless%20Next.js**%20with%20Now.png?theme=light&md=1&fontSize=83px&images=https%3A%2F%2Fassets.zeit.co%2Fimage%2Fupload%2Ffront%2Fassets%2Fdesign%2Fnow-black.svg&images=https%3A%2F%2Fassets.zeit.co%2Fimage%2Fupload%2Ffront%2Fassets%2Fdesign%2Fnextjs-black-logo.svg&heights=250&heights=350',
   editUrl: 'pages/guides/deploying-nextjs-with-now.mdx',
-  lastEdited: '2019-03-21T01:20:46.000Z'
+  lastEdited: '2019-06-03T23:27:07.000Z'
 }
+
+This guide will help you get started using [Next.js](https://nextjs.org/) with [Now](/now) by covering a variety of topics from [Installing Now](#installing-now) to deploying your Next.js application **with a single command**.
 
 Next.js is a framework, created by [ZEIT](https://zeit.co), for creating production-ready, fast, and extended React applications with a lot of handy features built-in.
 
-In this guide, we will show you how to set up a Server-Side Rendered Next.js application and how to deploy it with [ZEIT Now](/docs/v2).
+## Installing Now
 
-## Step 1: Set Up Your Next.js Project
+To get started with Now, you need to install it first. For your convenience, we have provided three options for installing it below.
 
-The first step to [setting up a Next.js project](https://nextjs.org/learn) is to create a project directory and then install the required dependencies from your terminal:
+<Note>
+  If you already have Now installed, you can{' '}
+  <GenericLink href="#creating-the-project">skip this section</GenericLink>.
+</Note>
 
-<TerminalInput>yarn add next react react-dom</TerminalInput>
-<Caption>Installing Next.js, React, and React DOM with Yarn. Alternatively, use <GenericLink href="https://nextjs.org/docs/#setup">npm</GenericLink>.</Caption>
+#### Now Desktop
 
-The next step in this set up is to add a `scripts` property to the `package.json` file that was generated in the installation above. The property will [include a script to run a local server](https://nextjs.org/docs/#setup) for development of your project:
+[Now Desktop](/download) provides Now through a desktop user interface, providing a visual experience along with the following benefits:
 
-```json
-{
-  ...
-  "scripts": {
-    "dev": "next"
-  }
+- Creating deployments with **drag and drop**
+- Keeps **Now CLI up-to-date** at all times
+- View your **team's event feed**
+
+To install Now Desktop, visit the [download page](/download) and select the platform relevant to you.
+
+#### Yarn or npm
+
+For those who prefer to use the command line, we also provide the option to install the Now through either [Yarn](https://yarnpkg.com/) or [npm](https://www.npmjs.com/).
+
+To install Now with Yarn:
+
+<TerminalInput>yarn global add now</TerminalInput>
+<Caption>Installing Now globally with Yarn.</Caption>
+
+To install Now with npm:
+
+<TerminalInput>npm install -g now</TerminalInput>
+<Caption>Installing Now globally with npm.</Caption>
+
+#### Curl
+
+TBC
+
+#### GitHub and GitLab Integrations
+
+To enhance your development experience with Now further, we also provide integrations with both [GitHub](/docs/v2/integrations/now-for-github/) and [GitLab](/docs/v2/integrations/now-for-gitlab/).
+
+The Now for GitHub and GitLab integrations have many features to improve your workflow:
+
+- Deploys every push in branches and pull requests to preview changes live
+- Aliases the most recent changes from the master branch
+- Instant rollbacks when reverting changes that have been aliased
+
+You can read more about the [GitHub](/docs/v2/integrations/now-for-github/) and [GitLab](/docs/v2/integrations/now-for-gitlab/) integrations, including how to install them, in the [documentation](/docs/).
+
+## Creating the Project
+
+The application you make will feature a static frontend, created with [Next.js](https://nextjs.org/), and also feature a [Node.js](https://nodejs.org/) backend, showing how simple it is to deploy monorepo's with Now.
+
+The first thing you should do is create a project directory and `cd` into it:
+
+<TerminalInput>mkdir my-nextjs-project && cd my-nextjs-project</TerminalInput>
+<Caption>Creating an entering into the <InlineCode>my-nextjs-project</InlineCode> project directory.</Caption>
+
+With the project directory created, initialize the project like so:
+
+<TerminalInput>yarn init -y</TerminalInput>
+<Caption>Initializing your project with a <InlineCode>package.json</InlineCode> file.</Caption>
+
+The last step before creating your Next.js frontend is to add the project dependencies:
+
+<TerminalInput>yarn add moment next react react-dom</TerminalInput>
+<Caption>Adding <InlineCode>moment</InlineCode>, <InlineCode>next</InlineCode>, <InlineCode>react</InlineCode> and <InlineCode>react-dom</InlineCode> as dependencies to your project.</Caption>
+
+#### Creating the Next.js Frontend
+
+With your project setup, create a `/pages` folder for your Next.js frontend:
+
+<TerminalInput>mkdir pages</TerminalInput>
+<Caption>Creating a <InlineCode>/pages</InlineCode> folder in your project for your Next.js frontend.</Caption>
+
+Inside your `/pages` folder, create an `index.js` file with the following content:
+
+```jsx
+import { useEffect, useState } from 'react'
+import Head from 'next/head'
+
+export default function HomePage() {
+  const [data, setData] = useState({})
+  useEffect(() => {
+    async function getData() {
+      const res = await fetch('/api/date?code=7')
+      const { code, greeting } = await res.json()
+      setData({ code, greeting })
+    }
+    getData()
+  }, [])
+  return (
+    <>
+      <Head>
+        <title>Static Next.js</title>
+        <link rel="stylesheet" href="../static/index.css" type="text/css" />
+      </Head>
+      <h1>Welcome to a Static Next.js Site with Data from a Node.js API</h1>
+      <h2>
+        Developed & Deployed with{' '}
+        <a
+          href="https://zeit.co/docs"
+          target="_blank"
+          rel="noreferrer noopener"
+        >
+          ZEIT Now
+        </a>
+        !
+      </h2>
+      <br />
+      <p>{(data && data.greeting) || 'Loading date...'}</p>
+      <p>You provided the code: {(data && data.code) || '???'}</p>
+    </>
+  )
 }
 ```
 
 <Caption>
-  A <InlineCode>scripts</InlineCode> property within a{' '}
-  <InlineCode>package.json</InlineCode>, containing a script to start a Next.js
-  development server.{' '}
+  An <InlineCode>index.js</InlineCode> file for your Next.js frontend.
 </Caption>
 
-Now that the initial set up of your Next.js project is done, you are ready to create your first page.
+The `index.js` file displays static content whilst loading data from an API in the background that you will soon create.
 
-Create a `pages` directory and then within that directory, create an `index.js` for the homepage with the following contents:
+By rendering the static markup on page load rather than waiting for the API data, your site will always appear **lightning fast**.
 
-```js
-function Home() {
-  return <div>Welcome to Next.js!</div>
-}
+#### Creating the Node.js API
 
-export default Home
-```
+With your Next.js frontend setup, create an `/api` folder for your Node.js API endpoints:
 
-<Caption>A simple Next.js index page located in the pages directory.</Caption>
+<TerminalInput>mkdir api</TerminalInput>
+<Caption>Creating an <InlineCode>/api</InlineCode> folder in your project for your Node.js API endpoints.</Caption>
 
-You can then run your new Next.js project with the following command
-
-<TerminalInput>yarn dev</TerminalInput>
-<Caption>Running a local development server with the script set up earlier.</Caption>
-
-You can now start developing your Next.js application while testing it locally.
-
-## Step 2: Deploy Your Next.js Project with Now
-
-With your Next.js project set up, you are ready to deploy your app with [Now](/now).
-
-If you have not yet installed Now, you can do so by installing the [Now Desktop app](/docs/v2/getting-started/installation/#now-desktop) which installs Now CLI automatically, or by [installing Now CLI](/docs/v2/getting-started/installation/#now-cli) directly.
-
-The first step of deploying Next.js with Now is to create a `next.config.js` file to tell Next that the files it will build are serverless. Each page will be built as an individual serverless [lambda](/docs/v2/deployments/concepts/lambdas).
+Inside your `/api` folder, create a `date.js` file with the following content:
 
 ```js
-module.exports = {
-  target: 'serverless'
+const moment = require('moment')
+const url = require('url')
+
+module.exports = (req, res) => {
+  const { query } = url.parse(req.url, true)
+  const { code } = query
+  const currentTime = moment().format('MMMM Do YYYY, h:mm:ss a')
+  const name = process.env.NAME
+  const greeting = `The date and time at ${name}'s current location is: ${currentTime}`
+
+  res.end(JSON.stringify({ code, greeting }))
 }
 ```
 
 <Caption>
-  Setting the Next.js build target to "serverless" to enable serverless builds.
+  A <InlineCode>date.js</InlineCode> file for your Node.js API.
 </Caption>
 
-Serverless Next.js is more performant and provides more stability on serverless platforms, such as Now.
+The `date.js` file uses `moment` to obtain and format the current date and time before sending it as a response to the frontend.
 
-Next, you will need to tell Now what the entrypoint is for the application and what Builder it should use to build and deploy the application so it will act as you would expect.
+#### Creating the Static CSS File
 
-You will need to create a [`now.json` configuration file](https://zeit.co/docs/v2/deployments/configuration) to instruct Now on how to handle your application in the build phase and when being served to visitors.
+With both frontend and backend taken care of, create a `/static` folder for your CSS:
+
+<TerminalInput>mkdir static</TerminalInput>
+<Caption>Creating a <InlineCode>/static</InlineCode> folder in your project for your static CSS files.</Caption>
+
+Inside your `/static` folder, create an `index.css` file with the following content:
+
+```css
+body {
+  font-family: 'SF Pro Text', 'SF Pro Icons', 'Helvetica Neue', 'Helvetica',
+    'Arial', sans-serif;
+  padding: 20px 20px 60px;
+  max-width: 680px;
+  margin: 0 auto;
+  font-size: 16px;
+  line-height: 1.65;
+  word-break: break-word;
+  font-kerning: auto;
+  font-variant: normal;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  hyphens: auto;
+  text-align: center;
+}
+
+h1 {
+  margin-top: 70px;
+  text-align: center;
+  font-size: 45px;
+}
+
+h2 {
+  margin-top: 1.5em;
+}
+
+a {
+  cursor: pointer;
+  color: #0076ff;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  border-bottom: 1px solid white;
+}
+
+a:hover {
+  border-bottom: 1px solid #0076ff;
+}
+
+code,
+pre {
+  font-family: Menlo, Monaco, Lucida Console, Liberation Mono, DejaVu Sans Mono,
+    Bitstream Vera Sans Mono, Courier New, monospace, serif;
+  font-size: 0.92em;
+  color: #d400ff;
+}
+
+code:before,
+code:after {
+  content: '`';
+}
+
+p {
+  text-align: center;
+  font-size: 16px;
+}
+```
+
+<Caption>
+  An <InlineCode>index.css</InlineCode> file to style your project.
+</Caption>
+
+## Adding `now.json` and `.nowignore`
+
+To provide configuration for your project, you should use a `now.json` file.
+
+The `now.json` file allows you to do many things such as [setting up an alias](/docs/v2/deployments/configuration/#alias), [adding builders to build your files](/docs/v2/deployments/configuration/#builds) and [rewriting requesting URLS](/docs/v2/deployments/configuration/#routes).
+
+These slightly more advanced topics will be looked at in the [next section]. For now, create a `now.json` file at the root of your project with the following code:
 
 ```json
 {
   "version": 2,
-  "name": "my-nextjs-app",
-  "builds": [{ "src": "next.config.js", "use": "@now/next" }]
+  "alias": "my-aliased-nodejs-project",
+  "name": "my-nodejs-project"
 }
 ```
 
 <Caption>
-  A <InlineCode>now.json</InlineCode> configuration file that specifies the
-  Next.js Builder.
+  An initial <InlineCode>now.json</InlineCode> file to configure your project.
 </Caption>
 
-The above `now.json` file achieves a few things:
+With this configuration you have setup the project `version`, `alias` and `name`, let's find out what they do:
 
-- Defines a `version` property to ensure you are using the latest [Now 2.0 platform](/docs/v2/platform/overview) version.
-- Defines a project `name` that your deployments will be sorted under and known by under Now.
-- Defines a `builds` property as an array with one build step using `@now/next` to instruct Now to build the project and deploy the [output](/docs/v2/deployments/builds#sources-and-outputs). Using the `package.json` file as an entrypoint, [more on that below](#build-instruction).
+#### Version
 
-To ensure a fresh build of your Next.js project gets built by Now, especially if you only deploy the source code, you can add a `now-build` script to your `package.json` file:
+The `version` property is used to specify which [Now platform version](/docs/v2/deployments/configuration/#version) to use for the deployment.
+
+<Note>
+  Only version 2 is available for accounts created after January 03 2019.
+</Note>
+
+#### Alias
+
+The `alias` property is used to alias deployments to another domain when using either the [Now for GitHub](/docs/v2/integrations/now-for-github/) or [Now for GitLab](/docs/v2/integrations/now-for-gitlab/) integrations.
+
+When pushing to a branch, each push will be [aliased](/docs/v2/domains-and-aliases/aliasing-a-deployment/) to the domain(s) specified.
+
+#### Name
+
+The `name` property is used to provide a [prefix](/docs/v2/deployments/configuration#name) to your deployments.
+
+#### `.nowignore`
+
+The `.nowignore` file works similar to a `.gitignore` file and is used to tell the Now CLI, [Now for GitHub](/docs/v2/integrations/now-for-github/) and [Now for GitLab](/docs/v2/integrations/now-for-github/) integrations to not upload certain files or directories.
+
+<Note>
+  The <InlineCode>.nowignore</InlineCode> file is populated by default with{' '}
+  <GenericLink href="LINK TO ISSUE 767 DOCS">
+    various files and directories
+  </GenericLink>
+  .
+</Note>
+
+Create a `.nowignore` file in the root of your project directory with the following code:
+
+```bash
+yarn.lock
+```
+
+Now that you've provided some **simple configuration** for your Next.js project, let's see in the next section **how easy it is to build your files**.
+
+## Adding Builders
+
+[Builders](docs/v2/deployments/builders/overview/) provide the step that turns your source code into [production ready outputs](/docs/v2/deployments/builds/#sources-and-outputs).
+
+These outputs can be either static files and/or [lambdas](/docs/v2/deployments/concepts/lambdas/), **both get served** by our [CDN at the Edge](/docs/v2/domains-and-aliases/cdn/) to make your deployments blazing fast to access around the globe.
+
+<Note>
+  You should use Builders whenever your source files require a transformation to
+  be served to users.
+</Note>
+
+For this project, you will require the use of three different Builders, [`@now/next`](/docs/v2/deployments/official-builders/next-js-now-next/), [`@now/node`](/docs/v2/deployments/official-builders/node-js-now-node/) and [`@now/static`](/docs/v2/deployments/official-builders/static-now-static/).
+
+**Using Builders is simple**, to do so, add the following code to your `now.json` file:
 
 ```json
 {
   ...
-  "scripts": {
-    ...
-    "now-build": "next build"
-  }
+  "builds": [
+    { "src": "api/**/*.js", "use": "@now/node" },
+    { "src": "next.config.js", "use": "@now/next" },
+    { "src": "static/**/*", "use": "@now/static" }
+  ]
 }
 ```
 
-<Note>
-  Don't forget to exclude the <InlineCode>.next</InlineCode> and{' '}
-  <InlineCode>node_modules</InlineCode> directories from being uploaded to Now
-  to prevent unintended side effects and to enable faster deployment. To do so,
-  add a{' '}
-  <GenericLink href="/guides/prevent-uploading-sourcepaths-with-nowignore/">
-    .nowignore
-  </GenericLink>{' '}
-  file to the root of the project directory and add both{' '}
-  <InlineCode>node_modules</InlineCode> and <InlineCode>.next</InlineCode> to it
-  on separate lines.
-</Note>
+<Caption>
+  Adding Builds to your projects' <InlineCode>now.json</InlineCode> file.
+</Caption>
 
-### Immutable Caching
+As you can see, **targeting certain directories and file types is straightforward**, providing you with **granular control** over which files get built and how you build them.
 
-You can cache your built client-side assets from Next.js with the following addition to your `now.json` configuration file through a `routes` property:
+## Adding Routes
+
+Like Builders, Routes are defined in the `now.json` file and provide a powerful option for routing requests.
+
+As you will see shortly, Routes are objects that consist of `src` and `dest` properties. The `src` is used to match the incoming request, and the `dest` determines how that request is routed.
+
+Your project requires a single route so that your Next.js frontend can reach your API, to do this, add the following to your `now.json` file:
 
 ```json
 {
   ...
   "routes": [
-    { "src": "/_next/static/(?:[^/]+/pages|chunks|runtime)/.+", "headers": { "cache-control": "immutable,max-age=31536000" } }
-  ]
+    { "src": "/api/code/(?<code>[^/]*)", "dest": "api/date?code=$code" }
+  ],
 }
 ```
 
-This configuration will [cache assets](https://zeit.co/docs/v2/routing/caching/), generated and given a hash by Next.js in the build phase, immutably. Each subsequent request from a user in the same area as a request that has already happened will be served faster thanks to caching.
+<Caption>
+  Adding a Route to your projects' <InlineCode>now.json</InlineCode> file.
+</Caption>
 
-These assets are not at risk of affecting new builds since they are hashed by Next.js and any new builds will have a new hash identifier, also being cached on request.
+The above Route provides an example of how powerful Routes are. A request is made to `/api/code/<code>`, this is matched and rewritten to `api/date/7`.
 
-### Deploying with Now
+As you can see, passing query parameters is easy to do when rewriting Routes. Taking advantage of this feature allows you to keep your routes clean whilst passing data to your API without having to use the request body.
 
-You are now ready to deploy the app with Now:
+Rewriting Routes is just one of many features available, you can read about them more in the [Routes documentation](/docs/v2/deployments/routes/).
 
-<TerminalInput>now</TerminalInput>
-<Caption>Deploying your Next.js app with Now CLI from a terminal.</Caption>
-
-Once the app is deployed, you will receive a deployment URL similar to the following (styled for effect, with an additional page): <https://nextjs-8fnzfb1ci.now.sh>
-
-## Resources
-
-For more information on working with Next.js, please refer to [the Next.js documentation](https://nextjs.org/docs).
-
-To configure Now further, please see these additional topics and guides:
-
-<Card title="Deploying Basics" href="/docs/v2/deployments/basics">
-  Deploy any of your applications with ZEIT Now.
-</Card>
-
-<Card
-  title="@now/next Builder"
-  href="/docs/v2/deployments/official-builders/next-js-now-next"
->
-  The Now Builder for Next.js.
-</Card>
-
-<Card
-  title="Deploying with Custom Next.js Routes"
-  href="/guides/custom-next-js-server-to-routes"
->
-  Custom Routes with Next.js and Now
-</Card>
-
-<Card
-  title="Aliasing"
-  href="/docs/v2/domains-and-aliases/aliasing-a-deployment/"
->
-  Learn more about aliasing to your deployments.
-</Card>
-
-<Card title="More Guides" href="/guides">
-  See more guides that help you move forward with your projects and deployments.
-</Card>
+<Note>
+  Routes are read from top to bottom with requests being routed on the first
+  match.
+</Note>
 
 export default ({ children }) => <Guide meta={meta}>{children}</Guide>
