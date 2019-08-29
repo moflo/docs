@@ -16,17 +16,26 @@ import DocsNavbarDesktop from '~/components/layout/navbar/desktop'
 import ToggleGroup, { ToggleItem } from '~/components/toggle-group'
 import { GenericLink } from '~/components/text/link'
 import components from '~/lib/mdx-components'
-import H1 from '~/components/text/h1'
-import H2 from '~/components/text/h2'
-import H3 from '~/components/text/h3'
-import H4 from '~/components/text/h4'
+import { H1, H2, H3, H4 } from '~/components/text'
 import HR from '~/components/text/hr'
-import { P } from '~/components/text/paragraph'
 import dataV1 from '~/lib/data/v1/docs'
 import dataV2 from '~/lib/data/v2/docs'
 import Select from '~/components/select'
 import Note from '~/components/text/note'
 import { FooterFeedback } from '~/components/feedback-input'
+
+const DocH1 = ({ children }) => (
+  <>
+    <Heading noAnchor lean offsetTop={175}>
+      <H1>{children}</H1>
+    </Heading>
+    <style jsx>{`
+      :global(h1) {
+        margin: 0;
+      }
+    `}</style>
+  </>
+)
 
 const DocH2 = ({ children }) => (
   <>
@@ -67,26 +76,7 @@ const DocH4 = ({ children }) => (
   </>
 )
 
-const AmpScripts = () => {
-  const isAmp = useAmp()
-  if (!isAmp) return null
-  return (
-    <>
-      <script
-        async
-        key="amp-bind"
-        custom-element="amp-bind"
-        src="https://cdn.ampproject.org/v0/amp-bind-0.1.js"
-      />
-      <script
-        async
-        key="amp-form"
-        custom-element="amp-form"
-        src="https://cdn.ampproject.org/v0/amp-form-0.1.js"
-      />
-    </>
-  )
-}
+const NonAmpOnly = ({ children }) => (useAmp() ? null : children)
 
 const VersionSelect = ({ onChange, version }) => {
   const isAmp = useAmp()
@@ -100,8 +90,8 @@ const VersionSelect = ({ onChange, version }) => {
         isAmp ? `change:AMP.navigateTo(url='${href}', target=_top)` : undefined
       }
     >
-      <option value="v1">v1</option>
-      <option value="v2">v2 (Latest)</option>
+      <option value="v1">1.0</option>
+      <option value="v2">2.0 (Latest)</option>
     </Select>
   )
   if (!isAmp) return curSelect
@@ -155,7 +145,7 @@ class withDoc extends React.Component {
           h4: DocH4
         }}
       >
-        <Layout>
+        <Layout dynamicSearch={false} data={versionData}>
           <Head
             titlePrefix=""
             titleSuffix=" - ZEIT Documentation"
@@ -165,73 +155,74 @@ class withDoc extends React.Component {
             lastEdited={meta.lastEdited}
           >
             {version !== 'v2' && <meta name="robots" content="noindex" />}
-            <AmpScripts />
           </Head>
 
           <Main>
-            <Sidebar active={navigationActive}>
-              <div className="toggle-group-wrapper">
-                <ToggleGroup>
-                  <ToggleItem
-                    active={
-                      router.pathname.startsWith('/docs') &&
-                      !router.pathname.startsWith('/docs/api')
-                    }
-                  >
-                    <Link prefetch href="/docs">
-                      <a onClick={this.handleIndexClick}>Docs</a>
-                    </Link>
-                  </ToggleItem>
-                  <ToggleItem active={router.pathname.startsWith('/docs/api')}>
-                    <Link prefetch href="/docs/api">
-                      <a onClick={this.handleIndexClick}>API Reference</a>
-                    </Link>
-                  </ToggleItem>
-                  <ToggleItem active={router.pathname.startsWith('/examples')}>
-                    <Link prefetch href="/examples">
-                      <a onClick={this.handleIndexClick}>Examples</a>
-                    </Link>
-                  </ToggleItem>
-                </ToggleGroup>
-              </div>
-              <h5 className="platform-select-title">Now Platform Version</h5>
-
-              <VersionSelect
-                version={version}
-                onChange={this.handleVersionChange}
-              />
-
-              <div className="navigation">
-                <DocsNavbarDesktop
-                  data={versionData}
-                  url={router}
-                  scrollSelectedIntoView={true}
+            <NonAmpOnly>
+              <Sidebar active={navigationActive}>
+                <div className="toggle-group-wrapper">
+                  <ToggleGroup>
+                    <ToggleItem
+                      active={
+                        router.pathname.startsWith('/docs') &&
+                        !router.pathname.startsWith('/docs/api')
+                      }
+                    >
+                      <Link prefetch href="/docs">
+                        <a onClick={this.handleIndexClick}>Docs</a>
+                      </Link>
+                    </ToggleItem>
+                    <ToggleItem
+                      active={router.pathname.startsWith('/docs/api')}
+                    >
+                      <Link prefetch href="/docs/api">
+                        <a onClick={this.handleIndexClick}>API Reference</a>
+                      </Link>
+                    </ToggleItem>
+                    <ToggleItem
+                      active={router.pathname.startsWith('/examples')}
+                    >
+                      <Link prefetch href="/examples">
+                        <a onClick={this.handleIndexClick}>Examples</a>
+                      </Link>
+                    </ToggleItem>
+                  </ToggleGroup>
+                </div>
+                <DocsNavbarDesktop data={versionData} url={router} />
+                <h5 className="platform-select-title">Now Platform Version</h5>
+                <VersionSelect
+                  version={version}
+                  onChange={this.handleVersionChange}
                 />
-              </div>
-            </Sidebar>
+              </Sidebar>
+            </NonAmpOnly>
             <Content>
               <div className="heading content-heading">
                 {version === 'v1' && (
                   <Note>
-                    This documentation is for <P.B>version 1</P.B> of the Now
+                    This documentation is for <b>version 1</b> of the Now
                     platform. For the latest features, please see{' '}
                     <GenericLink href="/docs/v2">
                       the version 2 documentation
                     </GenericLink>
                     . If you have yet to upgrade, see the{' '}
-                    <GenericLink href="/docs/v2/platform/upgrade-to-2-0">
+                    <GenericLink href="/guides/upgrade-to-2-0">
                       upgrade guide
                     </GenericLink>
                     .
                   </Note>
                 )}
-                <H1 itemProp="headline">{meta.title}</H1>
+                <DocH1>{meta.title}</DocH1>
               </div>
 
               <div className="content">{this.props.children}</div>
 
-              <HR />
-              <FooterFeedback />
+              <NonAmpOnly>
+                <>
+                  <HR />
+                  <FooterFeedback />
+                </>
+              </NonAmpOnly>
 
               <ContentFooter
                 lastEdited={meta.lastEdited}
@@ -256,14 +247,11 @@ class withDoc extends React.Component {
             }
 
             .platform-select-title {
-              font-size: 14px;
-              font-weight: bold;
+              font-size: var(--font-size-primary);
+              line-height: var(--line-height-primary);
+              font-weight: 400;
               margin-bottom: 16px;
-              margin-top: 0;
-            }
-
-            .navigation {
-              margin-top: 48px;
+              margin-top: 32px;
             }
 
             .toggle-group-wrapper {
@@ -277,10 +265,6 @@ class withDoc extends React.Component {
                 justify-content: center;
                 margin-bottom: 40px;
               }
-            }
-
-            .heading {
-              margin-top: 40px;
             }
           `}</style>
         </Layout>

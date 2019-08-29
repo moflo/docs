@@ -92,14 +92,12 @@ module.exports = phase => {
   const isDev = phase === PHASE_DEVELOPMENT_SERVER
 
   const config = {
-    experimental: {
-      amp: true
-    },
+    exportTrailingSlash: true,
 
     // Allow mdx and md files to be pages
     pageExtensions: ['jsx', 'js', 'mdx', 'md'],
 
-    assetPrefix: isExport ? '/docs' : '',
+    assetPrefix: isExport || isProdBuild ? '/docs' : '',
 
     env: {
       VERSION: require('./package.json').version,

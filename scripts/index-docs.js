@@ -13,7 +13,8 @@ async function main() {
   // Initialise Algolia client
   const client = algoliasearch('NNTAHQI9C5', process.env.ALGOLIA_API_KEY)
 
-  const tmpIndex = client.initIndex('prod_docs_tmp')
+  const tmpIndex = await client.initIndex('prod_docs_tmp')
+  const mainIndex = await client.initIndex('prod_docs')
 
   // Array to store object with content from pages
   let index = []
@@ -29,8 +30,7 @@ async function main() {
       'dist/guides/**/*.html',
       'dist/docs/v2/**/*.html',
       'dist/docs/api/v2/**/*.html',
-      'dist/docs/integrations/v2/**/*.html',
-      'dist/examples/**/*.html'
+      'dist/docs/integrations/v2/**/*.html'
     ])
     // filter out AMP pages
     files = files.filter(f => f.indexOf('.amp/index.html') < 0)
@@ -118,13 +118,10 @@ async function main() {
 
   // Test file
   // fs.writeFileSync(`test.json`, JSON.stringify(index))
-  const { taskID } = await client.copyIndex('prod_docs', tmpIndex.indexName, [
-    'settings',
-    'synonyms',
-    'rules'
-  ])
 
-  await tmpIndex.waitTask(taskID)
+  // Get settings of main index and set them to the temp index
+  const indexSettings = await mainIndex.getSettings()
+  await tmpIndex.setSettings(indexSettings)
 
   const indexTmp = [...index]
 
@@ -134,7 +131,7 @@ async function main() {
     await tmpIndex.waitTask(taskID)
   }
 
-  client.moveIndex(tmpIndex.indexName, 'prod_docs')
+  client.moveIndex(tmpIndex.indexName, mainIndex.indexName)
 }
 
 // Execute main function
